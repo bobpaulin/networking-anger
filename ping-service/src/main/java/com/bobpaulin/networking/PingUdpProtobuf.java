@@ -28,9 +28,8 @@ public class PingUdpProtobuf {
 						}
 						
 					})
-					.setHeader(Exchange.HTTP_METHOD, constant("PUT"))
 					.marshal().protobuf()
-	                .to("netty4:tcp://localhost:8686")
+	                .to("netty4:udp://localhost:8686")
 	                .unmarshal().protobuf(AddressBook.getDefaultInstance())
 	                .to("log:com.bobpaulin.networking.Ping?showAll=true");
 				
