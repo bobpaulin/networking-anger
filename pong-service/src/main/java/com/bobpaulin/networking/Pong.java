@@ -34,6 +34,9 @@ CamelContext context = new DefaultCamelContext();
 				from("netty4:udp://localhost:8686")
 					.to("direct:pongPersonProtoBuf");
 				
+				from("netty4:tcp://localhost:8787")
+				.to("direct:pongPersonSerialization");
+				
 				from("direct:pongPersonProtoBuf")
 					.unmarshal().protobuf(Person.getDefaultInstance())
 					.process(new Processor() {
@@ -63,6 +66,23 @@ CamelContext context = new DefaultCamelContext();
 					}
 				})
 				.marshal().json(JsonLibrary.Jackson);
+				
+				from("direct:pongPersonSerialization")
+				.unmarshal().serialization()
+				.process(new Processor() {
+					
+					public void process(Exchange exchange) throws Exception {
+						com.bobpaulin.networking.models.json.Person person = exchange.getIn().getBody(com.bobpaulin.networking.models.json.Person.class);
+						System.out.println("ID: " + person.getId());
+						com.bobpaulin.networking.models.json.AddressBook addressBook = new com.bobpaulin.networking.models.json.AddressBook();
+						com.bobpaulin.networking.models.json.Person johnPerson = new  com.bobpaulin.networking.models.json.Person();
+						johnPerson.setId(2);
+						johnPerson.setName("John");
+						addressBook.getAddressList().add(johnPerson);
+						exchange.getIn().setBody(addressBook);
+					}
+				})
+				.marshal().serialization();
 				
 			}
 		});

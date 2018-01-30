@@ -1,6 +1,12 @@
 package com.bobpaulin.networking.models.json;
 
-public class Person {
+import java.io.Serializable;
+
+public class Person implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7921244761623367144L;
 	private int id;
 	private String name;
 	public int getId() {
