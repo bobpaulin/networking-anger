@@ -1,9 +1,12 @@
 package com.bobpaulin.networking;
 
+import java.util.Random;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.jetty.JettyHttpComponent;
 import org.apache.camel.component.protobuf.AddressBookProtos.AddressBook;
 import org.apache.camel.component.protobuf.AddressBookProtos.Person;
 import org.apache.camel.impl.DefaultCamelContext;
@@ -28,6 +31,10 @@ CamelContext context = new DefaultCamelContext();
 					.put("json/person")
 						.to("direct:pongPersonJson");
 				
+				JettyHttpComponent jettyComponent = getContext().getComponent("jetty", JettyHttpComponent.class);
+				jettyComponent.setMaxThreads(40);
+				jettyComponent.setMinThreads(1);
+				
 				from("netty4:tcp://localhost:8585")
 					.to("direct:pongPersonProtoBuf");
 				
@@ -36,6 +43,9 @@ CamelContext context = new DefaultCamelContext();
 				
 				from("netty4:tcp://localhost:8787")
 				.to("direct:pongPersonSerialization");
+				
+				from("jetty:http://localhost:8888/threads/test")
+				.to("direct:webPerfTest");
 				
 				from("direct:pongPersonProtoBuf")
 					.unmarshal().protobuf(Person.getDefaultInstance())
@@ -51,12 +61,12 @@ CamelContext context = new DefaultCamelContext();
 					.marshal().protobuf();
 				
 				from("direct:pongPersonJson")
-				.unmarshal().json(JsonLibrary.Jackson, com.bobpaulin.networking.models.json.Person.class)
+				//.unmarshal().json(JsonLibrary.Jackson, com.bobpaulin.networking.models.json.Person.class)
 				.process(new Processor() {
 					
 					public void process(Exchange exchange) throws Exception {
-						com.bobpaulin.networking.models.json.Person person = exchange.getIn().getBody(com.bobpaulin.networking.models.json.Person.class);
-						System.out.println("ID: " + person.getId());
+						//com.bobpaulin.networking.models.json.Person person = exchange.getIn().getBody(com.bobpaulin.networking.models.json.Person.class);
+					//	System.out.println("ID: " + person.getId());
 						com.bobpaulin.networking.models.json.AddressBook addressBook = new com.bobpaulin.networking.models.json.AddressBook();
 						com.bobpaulin.networking.models.json.Person johnPerson = new  com.bobpaulin.networking.models.json.Person();
 						johnPerson.setId(2);
@@ -83,6 +93,24 @@ CamelContext context = new DefaultCamelContext();
 					}
 				})
 				.marshal().serialization();
+				
+				from("direct:webPerfTest")
+				.process(new Processor() {
+					
+					Random random = new Random();
+					
+					public void process(Exchange exchange) throws Exception {
+						try {
+							Thread.sleep(this.random.nextInt(2000));
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						exchange.getIn().setHeader("Content-Type", constant("text/plain"));
+						exchange.getIn().setBody("Test");
+						
+					}
+				});
 				
 			}
 		});
