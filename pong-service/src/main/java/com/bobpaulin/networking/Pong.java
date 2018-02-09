@@ -1,6 +1,7 @@
 package com.bobpaulin.networking;
 
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -8,15 +9,18 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jetty.JettyHttpComponent;
 import org.apache.camel.component.protobuf.AddressBookProtos.AddressBook;
+import org.apache.camel.component.protobuf.AddressBookProtos.AddressBook.Builder;
 import org.apache.camel.component.protobuf.AddressBookProtos.Person;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
 
+import static io.github.benas.randombeans.api.EnhancedRandom.*;
+
 public class Pong {
 
 	public static void main(String[] args) throws Exception {
-CamelContext context = new DefaultCamelContext();
+		CamelContext context = new DefaultCamelContext();
 
 		
 		context.addRoutes(new RouteBuilder() {
@@ -47,6 +51,12 @@ CamelContext context = new DefaultCamelContext();
 				from("jetty:http://localhost:8888/threads/test")
 				.to("direct:webPerfTest");
 				
+				from("netty4:udp://localhost:8989")
+					.to("direct:countMessages");
+				
+				from("netty4:tcp://localhost:9090")
+					.to("direct:countMessages");
+				
 				from("direct:pongPersonProtoBuf")
 					.unmarshal().protobuf(Person.getDefaultInstance())
 					.process(new Processor() {
@@ -54,8 +64,16 @@ CamelContext context = new DefaultCamelContext();
 						public void process(Exchange exchange) throws Exception {
 							Person person = exchange.getIn().getBody(Person.class);
 							System.out.println("ID: " + person.getId());
-							AddressBook addressBook = AddressBook.newBuilder().addPerson(Person.newBuilder().setId(2).setName("John").build()).build();
-							exchange.getIn().setBody(addressBook);
+							
+							Builder addressBookBuilder = AddressBook.newBuilder();
+							for(int i = 0; i < 100; i++)
+							{
+								addressBookBuilder.addPerson(Person.newBuilder().setId(1).setName("John").build());
+							}
+							
+							
+							
+							exchange.getIn().setBody(addressBookBuilder.build());
 						}
 					})
 					.marshal().protobuf();
@@ -68,10 +86,14 @@ CamelContext context = new DefaultCamelContext();
 						//com.bobpaulin.networking.models.json.Person person = exchange.getIn().getBody(com.bobpaulin.networking.models.json.Person.class);
 					//	System.out.println("ID: " + person.getId());
 						com.bobpaulin.networking.models.json.AddressBook addressBook = new com.bobpaulin.networking.models.json.AddressBook();
-						com.bobpaulin.networking.models.json.Person johnPerson = new  com.bobpaulin.networking.models.json.Person();
-						johnPerson.setId(2);
-						johnPerson.setName("John");
-						addressBook.getAddressList().add(johnPerson);
+						for(int i = 0; i < 100; i++)
+						{
+							com.bobpaulin.networking.models.json.Person person = new com.bobpaulin.networking.models.json.Person();
+							person.setId(1);
+							person.setName("John");
+							addressBook.getAddressList().add(person);
+						}
+						
 						exchange.getIn().setBody(addressBook);
 					}
 				})
@@ -82,13 +104,14 @@ CamelContext context = new DefaultCamelContext();
 				.process(new Processor() {
 					
 					public void process(Exchange exchange) throws Exception {
-						com.bobpaulin.networking.models.json.Person person = exchange.getIn().getBody(com.bobpaulin.networking.models.json.Person.class);
-						System.out.println("ID: " + person.getId());
 						com.bobpaulin.networking.models.json.AddressBook addressBook = new com.bobpaulin.networking.models.json.AddressBook();
-						com.bobpaulin.networking.models.json.Person johnPerson = new  com.bobpaulin.networking.models.json.Person();
-						johnPerson.setId(2);
-						johnPerson.setName("John");
-						addressBook.getAddressList().add(johnPerson);
+						for(int i = 0; i < 100; i++)
+						{
+							com.bobpaulin.networking.models.json.Person person = new com.bobpaulin.networking.models.json.Person();
+							person.setId(1);
+							person.setName("John");
+							addressBook.getAddressList().add(person);
+						}
 						exchange.getIn().setBody(addressBook);
 					}
 				})
@@ -111,6 +134,15 @@ CamelContext context = new DefaultCamelContext();
 						
 					}
 				});
+				
+				from("direct:countMessages")
+					.process(new Processor() {
+						private AtomicInteger messageCount = new AtomicInteger(0);
+						public void process(Exchange exchange) throws Exception {
+							System.out.println("Message " + messageCount.getAndIncrement() + " recieved.");
+							
+						}
+					});
 				
 			}
 		});

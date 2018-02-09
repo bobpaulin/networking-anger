@@ -48,6 +48,11 @@
                 <version>${camel.version}</version>
             </dependency>
             <dependency>
+            	<groupId>io.github.benas</groupId>
+				<artifactId>random-beans</artifactId>
+				<version>3.7.0</version>
+            </dependency>
+            <dependency>
             	<groupId>${project.groupId}</groupId>
             	<artifactId>common-models</artifactId>
             	<version>0.0.1-SNAPSHOT</version>

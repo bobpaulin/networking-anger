@@ -23,11 +23,17 @@ public class Main {
 				
 				rest("/timeout").get().to("direct:timeout");
 				rest("/retry").get().to("direct:retry");
+				rest("/notimeout").get().to("direct:notimeout");
+				
+				from("direct:notimeout")
+				.setHeader(Exchange.HTTP_METHOD, constant("GET"))
+                .setBody(simple("null"))
+                .to("http4://localhost:8888/threads/test?bridgeEndpoint=true&throwExceptionOnFailure=false");
 				
 				from("direct:timeout")
 				.setHeader(Exchange.HTTP_METHOD, constant("GET"))
                 .setBody(simple("null"))
-                .to("http4://localhost:8080/web-perf-test/test?bridgeEndpoint=true&throwExceptionOnFailure=false&httpClient.socketTimeout=600");
+                .to("http4://localhost:8888/threads/test?bridgeEndpoint=true&throwExceptionOnFailure=false&httpClient.socketTimeout=600");
 				
 				from("direct:retry")
 					.onException(Exception.class)
@@ -39,7 +45,7 @@ public class Main {
 		            .end()
 					.setHeader(Exchange.HTTP_METHOD, constant("GET"))
 	                .setBody(simple("null"))
-	                .to("http4://localhost:8080/web-perf-test/test?bridgeEndpoint=true&throwExceptionOnFailure=false&httpClient.socketTimeout=600");
+	                .to("http4://localhost:8888/threads/test?bridgeEndpoint=true&throwExceptionOnFailure=false&httpClient.socketTimeout=1500");
 				
 			}
 		});
