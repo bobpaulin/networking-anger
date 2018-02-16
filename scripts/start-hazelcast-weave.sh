@@ -1,0 +1,1 @@
+docker service create --name hazelcast-devnexus --network weave-devnexus --replicas 2 --mount type=bind,target=/opt/hazelcast/config_ext,source=/app/hazelcast-3.9.2/bin -e JAVA_OPTS="-Dhazelcast.config=/opt/hazelcast/config_ext/hazelcast-weave.xml"  hazelcast/hazelcast:3.9.2
