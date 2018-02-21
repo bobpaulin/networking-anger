@@ -12,12 +12,12 @@ import com.bobpaulin.networking.models.json.Person;
 
 import static io.github.benas.randombeans.api.EnhancedRandom.*;
 
-public class PingJsonRouteBuilder extends RouteBuilder {
+public class PingJsonTcpRouteBuilder extends RouteBuilder {
 	public static void main(String[] args) throws Exception {
 		CamelContext context = new DefaultCamelContext();
 
 		
-		context.addRoutes(new PingJsonRouteBuilder());
+		context.addRoutes(new PingJsonTcpRouteBuilder());
 		context.start();
 		
 		Thread.currentThread().sleep(20000);
@@ -35,9 +35,8 @@ public class PingJsonRouteBuilder extends RouteBuilder {
 				}
 				
 			})
-			.setHeader(Exchange.HTTP_METHOD, constant("PUT"))
 			.marshal().json(JsonLibrary.Jackson)
-            .to("http4://localhost:8484/pong/json/person")
+            .to("netty4:tcp://localhost:7979")
             .unmarshal().json(JsonLibrary.Jackson, AddressBook.class)
             .to("log:com.bobpaulin.networking.Ping?showAll=true");
 		

@@ -57,6 +57,9 @@ public class Pong {
 				from("netty4:tcp://localhost:9090")
 					.to("direct:countMessages");
 				
+				from("netty4:tcp://localhost:7979")
+					.to("direct:pongPersonJson");
+				
 				from("direct:pongPersonProtoBuf")
 					.unmarshal().protobuf(Person.getDefaultInstance())
 					.process(new Processor() {

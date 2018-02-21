@@ -11,10 +11,11 @@ public class Ping {
 		
 		context.addRoutes(new Ping100TCPRouteBuilder());
 		context.addRoutes(new Ping100UDPRouteBuilder());
-		context.addRoutes(new PingJsonRouteBuilder());
+		context.addRoutes(new PingJsonHttpRouteBuilder());
 		context.addRoutes(new PingTcpProtobufRouteBuilder());
 		context.addRoutes(new PingTcpSerializationRouteBuilder());
 		context.addRoutes(new PingUdpProtobufRouteBuilder());
+		context.addRoutes(new PingJsonTcpRouteBuilder());
 		context.start();
 		
 		System.in.read();
