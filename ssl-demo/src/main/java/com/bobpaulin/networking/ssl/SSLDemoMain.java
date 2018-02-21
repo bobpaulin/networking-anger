@@ -10,7 +10,7 @@ import org.apache.camel.util.jsse.KeyManagersParameters;
 import org.apache.camel.util.jsse.KeyStoreParameters;
 import org.apache.camel.util.jsse.SSLContextParameters;
 
-public class Main {
+public class SSLDemoMain {
 
 	public static void main(String[] args) throws Exception {
 		
@@ -33,7 +33,7 @@ public class Main {
 				 
 				SSLContextParameters scp = new SSLContextParameters();
 				scp.setKeyManagers(kmp);
-				scp.setSecureSocketProtocol("TLSv1.2");
+				//tls
 				 
 				HttpComponent httpComponent = getContext().getComponent("https4", HttpComponent.class);
 				httpComponent.setSslContextParameters(scp);
