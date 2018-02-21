@@ -46,7 +46,7 @@ public class SSLDemoMain {
 				from("direct:secure")
 				.setHeader(Exchange.HTTP_METHOD, constant("GET"))
                 .setBody(simple("null"))
-                .to("https4://localhost:8443?bridgeEndpoint=true&throwExceptionOnFailure=false");
+                .to("https4://localhost:8043?bridgeEndpoint=true&throwExceptionOnFailure=false");
 				
 			}
 		});
