@@ -27,17 +27,14 @@ public class Ping100TCPRouteBuilder extends RouteBuilder {
 	public void configure() throws Exception {
 
 		from("timer:serializationTimer?fixedRate=true&period=10s").setHeader("counter", constant(0))
-				.process(new Processor() {
-
-					public void process(Exchange exchange) throws Exception {
+				.process((exchange) -> {
 						List<Integer> messageList = new ArrayList<Integer>();
 						for (int i = 0; i < 100; i++) {
 							messageList.add(i);
 						}
 						exchange.getIn().setBody(messageList);
 
-					}
-				}).split(body()).to("netty4:tcp://localhost:9090").end();
+					}).split(body()).to("netty4:tcp://localhost:9090").end();
 	}
 
 }

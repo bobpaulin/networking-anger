@@ -62,9 +62,7 @@ public class Pong {
 				
 				from("direct:pongPersonProtoBuf")
 					.unmarshal().protobuf(Person.getDefaultInstance())
-					.process(new Processor() {
-						
-						public void process(Exchange exchange) throws Exception {
+					.process((exchange) -> {
 							Person person = exchange.getIn().getBody(Person.class);
 							System.out.println("ID: " + person.getId());
 							
@@ -77,15 +75,12 @@ public class Pong {
 							
 							
 							exchange.getIn().setBody(addressBookBuilder.build());
-						}
-					})
+						})
 					.marshal().protobuf();
 				
 				from("direct:pongPersonJson")
 				//.unmarshal().json(JsonLibrary.Jackson, com.bobpaulin.networking.models.json.Person.class)
-				.process(new Processor() {
-					
-					public void process(Exchange exchange) throws Exception {
+				.process((exchange) -> {
 						//com.bobpaulin.networking.models.json.Person person = exchange.getIn().getBody(com.bobpaulin.networking.models.json.Person.class);
 					//	System.out.println("ID: " + person.getId());
 						com.bobpaulin.networking.models.json.AddressBook addressBook = new com.bobpaulin.networking.models.json.AddressBook();
@@ -98,15 +93,12 @@ public class Pong {
 						}
 						
 						exchange.getIn().setBody(addressBook);
-					}
-				})
+					})
 				.marshal().json(JsonLibrary.Jackson);
 				
 				from("direct:pongPersonSerialization")
 				.unmarshal().serialization()
-				.process(new Processor() {
-					
-					public void process(Exchange exchange) throws Exception {
+				.process((exchange) -> {
 						com.bobpaulin.networking.models.json.AddressBook addressBook = new com.bobpaulin.networking.models.json.AddressBook();
 						for(int i = 0; i < 100; i++)
 						{
@@ -116,8 +108,7 @@ public class Pong {
 							addressBook.getAddressList().add(person);
 						}
 						exchange.getIn().setBody(addressBook);
-					}
-				})
+					})
 				.marshal().serialization();
 				
 				from("direct:webPerfTest")

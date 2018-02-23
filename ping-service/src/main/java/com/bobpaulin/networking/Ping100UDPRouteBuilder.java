@@ -26,9 +26,7 @@ public class Ping100UDPRouteBuilder extends RouteBuilder{
 		
 		from("timer:serializationTimer?fixedRate=true&period=10s")
 		.setHeader("counter", constant(0))
-		.process(new Processor() {
-			
-			public void process(Exchange exchange) throws Exception {
+		.process((exchange) -> {
 				List<Integer> messageList = new ArrayList<Integer>();
 				for(int i = 0; i < 100; i++)
 				{
@@ -36,17 +34,13 @@ public class Ping100UDPRouteBuilder extends RouteBuilder{
 				}
 				exchange.getIn().setBody(messageList);
 				
-			}
-		})
+			})
 		.split(body())
             .to("netty4:udp://localhost:8989?sync=false")
-            .process(new Processor() {
-				
-				public void process(Exchange exchange) throws Exception {
+            .process((exchange) -> {
 					System.out.println(Integer.toString(exchange.getIn().getBody(Integer.class)));
 					
-				}
-			})
+				})
         .end();
 		
 	}
